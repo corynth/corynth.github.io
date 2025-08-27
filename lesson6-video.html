@@ -23,7 +23,7 @@
         SPACE: Pause | Q/A: Scroll | R: Restart | M: Main Menu
     </div>
 
-    <a href="training-index.html" class="main-menu-btn">
+    <a href="index.html" class="main-menu-btn">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
             <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
         </svg>
@@ -37,7 +37,7 @@
             <div class="pause-buttons">
                 <button class="pause-btn" onclick="resumeLesson()">Continue</button>
                 <button class="pause-btn" onclick="restartLesson()">Restart</button>
-                <button class="pause-btn" onclick="window.location.href='training-index.html'">Main Menu</button>
+                <button class="pause-btn" onclick="window.location.href='index.html'">Main Menu</button>
             </div>
         </div>
     </div>
@@ -388,7 +388,7 @@ EOF`,
                 case 'm':
                 case 'M':
                     e.preventDefault();
-                    window.location.href = 'training-index.html';
+                    window.location.href = 'index.html';
                     break;
                 case 'q':
                 case 'Q':
@@ -435,7 +435,7 @@ EOF`,
         }
         
         function returnToMainMenu() {
-            window.location.href = 'training-index.html';
+            window.location.href = 'index.html';
         }
         
         document.addEventListener('keydown', function(e) {
