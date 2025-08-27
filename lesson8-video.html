@@ -76,64 +76,7 @@
             },
             {
                 type: 'output',
-                text: 'workflow "deployment-pipeline" {
-  description = "Complete CI/CD deployment workflow"
-
-  step "health_check_target" {
-    plugin = "http"
-    action = "get"
-    params = {
-      url = "https://httpbin.org/status/200"
-    }
-    retry {
-      max_attempts = 3
-      delay = "5s"
-    }
-  }
-
-  # Parallel artifact downloads
-  step "download_app" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["health_check_target"]
-    params = {
-      command = "echo 'Downloaded app.zip' && touch /tmp/app.zip"
-    }
-  }
-
-  step "download_config" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["health_check_target"]
-    params = {
-      command = "echo 'Downloaded config.json' && touch /tmp/config.json"
-    }
-  }
-
-  step "pre_deploy_validation" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["download_app", "download_config"]
-    params = {
-      command = "echo 'Validation passed: artifacts ready'"
-    }
-  }
-
-  step "deploy" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["pre_deploy_validation"]
-    params = {
-      command = "echo 'Deployment successful'"
-    }
-    continue_on { error = true }
-  }
-
-  step "post_deploy_verify" {
-    plugin = "http"
-    action = "get"
-    depends_on = ["deploy"]
-    params = {\\n      url = \"https://httpbin.org/status/200\"\\n    }\\n  }\\n}\\nEOF',
+                text: 'workflow "deployment-pipeline" {\n  description = "Complete CI/CD deployment workflow"\n\n  step "health_check_target" {\n    plugin = "http"\n    action = "get"\n    params = {\n      url = "https://httpbin.org/status/200"\n    }\n    retry {\n      max_attempts = 3\n      delay = "5s"\n    }\n  }\n\n  # Parallel artifact downloads\n  step "download_app" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["health_check_target"]\n    params = {\n      command = "echo \'Downloaded app.zip\' && touch /tmp/app.zip"\n    }\n  }\n\n  step "download_config" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["health_check_target"]\n    params = {\n      command = "echo \'Downloaded config.json\' && touch /tmp/config.json"\n    }\n  }\n\n  step "pre_deploy_validation" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["download_app", "download_config"]\n    params = {\n      command = "echo \'Validation passed: artifacts ready\'"\n    }\n  }\n\n  step "deploy" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["pre_deploy_validation"]\n    params = {\n      command = "echo \'Deployment successful\'"\n    }\n    continue_on { error = true }\n  }\n\n  step "post_deploy_verify" {\n    plugin = "http"\n    action = "get"\n    depends_on = ["deploy"]\n    params = {\n      url = "https://httpbin.org/status/200"\n    }\n  }\n}\nEOF',
                 delay: 1000
             },
             {
@@ -148,70 +91,7 @@
             },
             {
                 type: 'output',
-                text: `workflow "comprehensive-monitoring" {
-  description = "Multi-service monitoring with metrics"
-
-  variable "alert_threshold" {
-    type = string
-    default = "90"
-  }
-
-  # Parallel service checks
-  step "check_web_service" {
-    plugin = "http"
-    action = "get"
-    params = {
-      url = "https://httpbin.org/status/200"
-    }
-    continue_on { error = true }
-  }
-
-  step "check_api_service" {
-    plugin = "http"
-    action = "get"
-    params = {
-      url = "https://api.github.com/zen"
-    }
-    continue_on { error = true }
-  }
-
-  step "collect_disk_metrics" {
-    plugin = "shell"
-    action = "exec"
-    params = {
-      command = "df -h | head -2 > /tmp/disk_metrics.txt"
-    }
-  }
-
-  step "collect_memory_metrics" {
-    plugin = "shell"
-    action = "exec"
-    params = {
-      command = "free -m > /tmp/memory_metrics.txt"
-    }
-  }
-
-  # Generate monitoring report
-  step "create_dashboard_data" {
-    plugin = "file"
-    action = "write"
-    depends_on = ["check_web_service", "check_api_service", "collect_disk_metrics", "collect_memory_metrics"]
-    params = {
-      path = "/tmp/monitoring_report.json"
-      content = "{\\"timestamp\\": \\"$(date)\\", \\"web_status\\": \\"{{.Steps.check_web_service.output.status_code}}\\", \\"api_status\\": \\"{{.Steps.check_api_service.output.status_code}}\\", \\"threshold\\": \\"{{.Variables.alert_threshold}}\\"}"
-    }
-  }
-
-  step "archive_results" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["create_dashboard_data"]
-    params = {
-      command = "mkdir -p /tmp/monitoring_archive && cp /tmp/monitoring_report.json /tmp/monitoring_archive/report-$(date +%Y%m%d-%H%M%S).json"
-    }
-  }
-}
-EOF`,
+                text: 'workflow "comprehensive-monitoring" {\n  description = "Multi-service monitoring with metrics"\n\n  variable "alert_threshold" {\n    type = string\n    default = "90"\n  }\n\n  # Parallel service checks\n  step "check_web_service" {\n    plugin = "http"\n    action = "get"\n    params = {\n      url = "https://httpbin.org/status/200"\n    }\n    continue_on { error = true }\n  }\n\n  step "check_api_service" {\n    plugin = "http"\n    action = "get"\n    params = {\n      url = "https://api.github.com/zen"\n    }\n    continue_on { error = true }\n  }\n\n  step "collect_disk_metrics" {\n    plugin = "shell"\n    action = "exec"\n    params = {\n      command = "df -h | head -2 > /tmp/disk_metrics.txt"\n    }\n  }\n\n  step "collect_memory_metrics" {\n    plugin = "shell"\n    action = "exec"\n    params = {\n      command = "free -m > /tmp/memory_metrics.txt"\n    }\n  }\n\n  # Generate monitoring report\n  step "create_dashboard_data" {\n    plugin = "file"\n    action = "write"\n    depends_on = ["check_web_service", "check_api_service", "collect_disk_metrics", "collect_memory_metrics"]\n    params = {\n      path = "/tmp/monitoring_report.json"\n      content = "{\\"timestamp\\": \\"$(date)\\", \\"web_status\\": \\"{{.Steps.check_web_service.output.status_code}}\\", \\"api_status\\": \\"{{.Steps.check_api_service.output.status_code}}\\", \\"threshold\\": \\"{{.Variables.alert_threshold}}\\"}" \n    }\n  }\n\n  step "archive_results" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["create_dashboard_data"]\n    params = {\n      command = "mkdir -p /tmp/monitoring_archive && cp /tmp/monitoring_report.json /tmp/monitoring_archive/report-$(date +%Y%m%d-%H%M%S).json"\n    }\n  }\n}\nEOF',
                 delay: 1000
             },
             {
