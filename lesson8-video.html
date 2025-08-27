@@ -61,55 +61,7 @@
             },
             {
                 type: 'output',
-                text: `workflow "api-integration-pipeline" {
-  description = "Multi-API data processing workflow"
-
-  # Parallel API calls
-  step "fetch_uuid" {
-    plugin = "http"
-    action = "get"
-    params = {
-      url = "https://httpbin.org/uuid"
-    }
-  }
-
-  step "fetch_ip" {
-    plugin = "http"
-    action = "get"
-    params = {
-      url = "https://httpbin.org/ip"
-    }
-  }
-
-  step "fetch_zen" {
-    plugin = "http"
-    action = "get"
-    params = {
-      url = "https://api.github.com/zen"
-    }
-  }
-
-  # Combine results
-  step "process_data" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["fetch_uuid", "fetch_ip", "fetch_zen"]
-    params = {
-      command = "echo 'Processing complete: UUID, IP, and Zen data combined' > /tmp/api_results.txt"
-    }
-  }
-
-  # Notification
-  step "notify_complete" {
-    plugin = "shell"
-    action = "exec"
-    depends_on = ["process_data"]
-    params = {
-      command = "echo 'Pipeline completed successfully at $(date)' >> /tmp/api_results.txt && cat /tmp/api_results.txt"
-    }
-  }
-}
-EOF`,
+                text: 'workflow "api-integration-pipeline" {\n  description = "Multi-API data processing workflow"\n\n  # Parallel API calls\n  step "fetch_uuid" {\n    plugin = "http"\n    action = "get"\n    params = {\n      url = "https://httpbin.org/uuid"\n    }\n  }\n\n  step "fetch_ip" {\n    plugin = "http"\n    action = "get"\n    params = {\n      url = "https://httpbin.org/ip"\n    }\n  }\n\n  step "fetch_zen" {\n    plugin = "http"\n    action = "get"\n    params = {\n      url = "https://api.github.com/zen"\n    }\n  }\n\n  # Combine results\n  step "process_data" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["fetch_uuid", "fetch_ip", "fetch_zen"]\n    params = {\n      command = "echo \'Processing complete: UUID, IP, and Zen data combined\' > /tmp/api_results.txt"\n    }\n  }\n\n  # Notification\n  step "notify_complete" {\n    plugin = "shell"\n    action = "exec"\n    depends_on = ["process_data"]\n    params = {\n      command = "echo \'Pipeline completed successfully at $(date)\' >> /tmp/api_results.txt && cat /tmp/api_results.txt"\n    }\n  }\n}\nEOF',
                 delay: 1000
             },
             {
@@ -124,7 +76,7 @@ EOF`,
             },
             {
                 type: 'output',
-                text: `workflow "deployment-pipeline" {
+                text: 'workflow "deployment-pipeline" {
   description = "Complete CI/CD deployment workflow"
 
   step "health_check_target" {
@@ -181,12 +133,7 @@ EOF`,
     plugin = "http"
     action = "get"
     depends_on = ["deploy"]
-    params = {
-      url = "https://httpbin.org/status/200"
-    }
-  }
-}
-EOF`,
+    params = {\\n      url = \"https://httpbin.org/status/200\"\\n    }\\n  }\\n}\\nEOF',
                 delay: 1000
             },
             {
