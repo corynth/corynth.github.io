@@ -68,19 +68,25 @@
   step "fetch_uuid" {
     plugin = "http"
     action = "get"
-    params = { url = "https://httpbin.org/uuid" }
+    params = {
+      url = "https://httpbin.org/uuid"
+    }
   }
 
   step "fetch_ip" {
     plugin = "http"
     action = "get"
-    params = { url = "https://httpbin.org/ip" }
+    params = {
+      url = "https://httpbin.org/ip"
+    }
   }
 
   step "fetch_zen" {
     plugin = "http"
     action = "get"
-    params = { url = "https://api.github.com/zen" }
+    params = {
+      url = "https://api.github.com/zen"
+    }
   }
 
   # Combine results
@@ -124,7 +130,9 @@ EOF`,
   step "health_check_target" {
     plugin = "http"
     action = "get"
-    params = { url = "https://httpbin.org/status/200" }
+    params = {
+      url = "https://httpbin.org/status/200"
+    }
     retry {
       max_attempts = 3
       delay = "5s"
@@ -136,28 +144,36 @@ EOF`,
     plugin = "shell"
     action = "exec"
     depends_on = ["health_check_target"]
-    params = { command = "echo 'Downloaded app.zip' && touch /tmp/app.zip" }
+    params = {
+      command = "echo 'Downloaded app.zip' && touch /tmp/app.zip"
+    }
   }
 
   step "download_config" {
     plugin = "shell"
     action = "exec"
     depends_on = ["health_check_target"]
-    params = { command = "echo 'Downloaded config.json' && touch /tmp/config.json" }
+    params = {
+      command = "echo 'Downloaded config.json' && touch /tmp/config.json"
+    }
   }
 
   step "pre_deploy_validation" {
     plugin = "shell"
     action = "exec"
     depends_on = ["download_app", "download_config"]
-    params = { command = "echo 'Validation passed: artifacts ready'" }
+    params = {
+      command = "echo 'Validation passed: artifacts ready'"
+    }
   }
 
   step "deploy" {
     plugin = "shell"
     action = "exec"
     depends_on = ["pre_deploy_validation"]
-    params = { command = "echo 'Deployment successful'" }
+    params = {
+      command = "echo 'Deployment successful'"
+    }
     continue_on { error = true }
   }
 
@@ -165,7 +181,9 @@ EOF`,
     plugin = "http"
     action = "get"
     depends_on = ["deploy"]
-    params = { url = "https://httpbin.org/status/200" }
+    params = {
+      url = "https://httpbin.org/status/200"
+    }
   }
 }
 EOF`,
@@ -195,27 +213,35 @@ EOF`,
   step "check_web_service" {
     plugin = "http"
     action = "get"
-    params = { url = "https://httpbin.org/status/200" }
+    params = {
+      url = "https://httpbin.org/status/200"
+    }
     continue_on { error = true }
   }
 
   step "check_api_service" {
     plugin = "http"
     action = "get"
-    params = { url = "https://api.github.com/zen" }
+    params = {
+      url = "https://api.github.com/zen"
+    }
     continue_on { error = true }
   }
 
   step "collect_disk_metrics" {
     plugin = "shell"
     action = "exec"
-    params = { command = "df -h | head -2 > /tmp/disk_metrics.txt" }
+    params = {
+      command = "df -h | head -2 > /tmp/disk_metrics.txt"
+    }
   }
 
   step "collect_memory_metrics" {
     plugin = "shell"
     action = "exec"
-    params = { command = "free -m > /tmp/memory_metrics.txt" }
+    params = {
+      command = "free -m > /tmp/memory_metrics.txt"
+    }
   }
 
   # Generate monitoring report
