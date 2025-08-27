@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corynth Training - Lesson 8: Practice Exercises</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 15px;
+            background: #1e1e1e;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            color: #e6e6e6;
+            zoom: 1.045;
+        }
+        
+        .terminal {
+            background: #0c0c0c;
+            border: 3px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 1000px;
+            margin: 0 auto;
+            height: 80vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .terminal-header {
+            background: #2d2d2d;
+            margin: -20px -20px 20px -20px;
+            padding: 12px 20px;
+            border-radius: 5px 5px 0 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            float: left;
+        }
+        
+        .control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .control.close { background: #ff5f56; }
+        .control.minimize { background: #ffbd2e; }
+        .control.maximize { background: #27c93f; }
+        
+        .terminal-title {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            line-height: 12px;
+        }
+        
+        .prompt { color: #00d4aa; font-weight: bold; }
+        .command { color: #ffffff; }
+        .output { color: #b8b8b8; margin: 8px 0; line-height: 1.4; }
+        .success { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+        .highlight { color: #ff6b9d; }
+        .comment { color: #6a9955; font-style: italic; }
+        .explanation { background: #1a3d5c; padding: 12px; margin: 15px 0; border-left: 4px solid #00aaff; border-radius: 4px; }
+        .checkpoint { background: #1a4d2e; padding: 12px; margin: 15px 0; border-left: 4px solid #00ff88; border-radius: 4px; }
+        .try-it { background: #4d1a3d; padding: 12px; margin: 15px 0; border-left: 4px solid #ff6b9d; border-radius: 4px; }
+        
+        .line { margin: 2px 0; min-height: 22px; line-height: 1.5; }
+        .line.spaced { margin: 8px 0; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        
+        .copyable-line {
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            color: #00d4aa;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7em;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            opacity: 1;
+            background: rgba(0, 212, 170, 0.2);
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .copy-btn.clicked {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+        }
+        
+        /* Navigation overlays */
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 170, 255, 0.15);
+            color: #00aaff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .controls-hint:hover {
+            opacity: 1;
+        }
+
+        .main-menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 157, 0.2);
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 1500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .main-menu-btn:hover {
+            background: #ff6b9d;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .pause-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .pause-dialog {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .pause-dialog h3 {
+            color: #00aaff;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .pause-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pause-btn {
+            background: rgba(0, 170, 255, 0.2);
+            color: #00aaff;
+            border: 1px solid rgba(0, 170, 255, 0.4);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .pause-btn:hover {
+            background: rgba(0, 170, 255, 0.3);
+            border-color: rgba(0, 170, 255, 0.6);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control close"></div>
+                <div class="control minimize"></div>
+                <div class="control maximize"></div>
+            </div>
+            <div class="terminal-title">Lesson 8: Practice Exercises - Corynth Training</div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="content"></div>
+    </div>
+
+    <!-- Navigation overlays -->
+    <div class="controls-hint">
+        SPACE: Pause | Q/A: Scroll | R: Restart | M: Main Menu
+    </div>
+
+    <a href="training-index.html" class="main-menu-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+        </svg>
+        Main Menu
+    </a>
+
+    <div class="pause-overlay" id="pauseOverlay">
+        <div class="pause-dialog">
+            <h3>Lesson Paused</h3>
+            <p>Choose an option to continue:</p>
+            <div class="pause-buttons">
+                <button class="pause-btn" onclick="resumeLesson()">Continue</button>
+                <button class="pause-btn" onclick="restartLesson()">Restart</button>
+                <button class="pause-btn" onclick="window.location.href='training-index.html'">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const lessonContent = [
+            {
+                type: 'intro',
+                text: '<span class="highlight">Lesson 8: Practice Exercises</span>',
+                delay: 800
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><strong>Challenge 1: API Integration Pipeline</strong><br/>Create a workflow that:<br/>1. Fetches data from 3 different APIs in parallel<br/>2. Combines the results using shell commands<br/>3. Saves the processed data to a file<br/>4. Sends a completion notification<br/><br/><strong>APIs to use:</strong><br/>• https://httpbin.org/uuid<br/>• https://httpbin.org/ip<br/>• https://api.github.com/zen</div>',
+                delay: 800
+            },
+            {
+                type: 'prompt',
+                command: 'cat > challenge1-solution.hcl << EOF',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: `workflow "api-integration-pipeline" {
+  description = "Multi-API data processing workflow"
+
+  # Parallel API calls
+  step "fetch_uuid" {
+    plugin = "http"
+    action = "get"
+    params = { url = "https://httpbin.org/uuid" }
+  }
+
+  step "fetch_ip" {
+    plugin = "http"
+    action = "get"
+    params = { url = "https://httpbin.org/ip" }
+  }
+
+  step "fetch_zen" {
+    plugin = "http"
+    action = "get"
+    params = { url = "https://api.github.com/zen" }
+  }
+
+  # Combine results
+  step "process_data" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["fetch_uuid", "fetch_ip", "fetch_zen"]
+    params = {
+      command = "echo 'Processing complete: UUID, IP, and Zen data combined' > /tmp/api_results.txt"
+    }
+  }
+
+  # Notification
+  step "notify_complete" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["process_data"]
+    params = {
+      command = "echo 'Pipeline completed successfully at $(date)' >> /tmp/api_results.txt && cat /tmp/api_results.txt"
+    }
+  }
+}
+EOF`,
+                delay: 1000
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><strong>Challenge 2: Deployment Pipeline</strong><br/>Build a complete CI/CD workflow:<br/>1. Health check the deployment target<br/>2. Download application artifacts (parallel)<br/>3. Run pre-deployment validation<br/>4. Deploy with rollback on failure<br/>5. Post-deployment verification<br/><br/><strong>Bonus:</strong> Add retry policies and error handling!</div>',
+                delay: 800
+            },
+            {
+                type: 'prompt',
+                command: 'cat > challenge2-solution.hcl << EOF',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: `workflow "deployment-pipeline" {
+  description = "Complete CI/CD deployment workflow"
+
+  step "health_check_target" {
+    plugin = "http"
+    action = "get"
+    params = { url = "https://httpbin.org/status/200" }
+    retry {
+      max_attempts = 3
+      delay = "5s"
+    }
+  }
+
+  # Parallel artifact downloads
+  step "download_app" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["health_check_target"]
+    params = { command = "echo 'Downloaded app.zip' && touch /tmp/app.zip" }
+  }
+
+  step "download_config" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["health_check_target"]
+    params = { command = "echo 'Downloaded config.json' && touch /tmp/config.json" }
+  }
+
+  step "pre_deploy_validation" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["download_app", "download_config"]
+    params = { command = "echo 'Validation passed: artifacts ready'" }
+  }
+
+  step "deploy" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["pre_deploy_validation"]
+    params = { command = "echo 'Deployment successful'" }
+    continue_on { error = true }
+  }
+
+  step "post_deploy_verify" {
+    plugin = "http"
+    action = "get"
+    depends_on = ["deploy"]
+    params = { url = "https://httpbin.org/status/200" }
+  }
+}
+EOF`,
+                delay: 1000
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><strong>Challenge 3: Monitoring Workflow</strong><br/>Create a comprehensive monitoring solution:<br/>1. Check multiple services (parallel)<br/>2. Collect system metrics (disk, memory)<br/>3. Generate alerts for failures<br/>4. Create monitoring dashboard data<br/>5. Archive results for historical analysis<br/><br/><strong>Advanced:</strong> Use variables for configuration!</div>',
+                delay: 800
+            },
+            {
+                type: 'prompt',
+                command: 'cat > challenge3-solution.hcl << EOF',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: `workflow "comprehensive-monitoring" {
+  description = "Multi-service monitoring with metrics"
+
+  variable "alert_threshold" {
+    type = string
+    default = "90"
+  }
+
+  # Parallel service checks
+  step "check_web_service" {
+    plugin = "http"
+    action = "get"
+    params = { url = "https://httpbin.org/status/200" }
+    continue_on { error = true }
+  }
+
+  step "check_api_service" {
+    plugin = "http"
+    action = "get"
+    params = { url = "https://api.github.com/zen" }
+    continue_on { error = true }
+  }
+
+  step "collect_disk_metrics" {
+    plugin = "shell"
+    action = "exec"
+    params = { command = "df -h | head -2 > /tmp/disk_metrics.txt" }
+  }
+
+  step "collect_memory_metrics" {
+    plugin = "shell"
+    action = "exec"
+    params = { command = "free -m > /tmp/memory_metrics.txt" }
+  }
+
+  # Generate monitoring report
+  step "create_dashboard_data" {
+    plugin = "file"
+    action = "write"
+    depends_on = ["check_web_service", "check_api_service", "collect_disk_metrics", "collect_memory_metrics"]
+    params = {
+      path = "/tmp/monitoring_report.json"
+      content = "{\\"timestamp\\": \\"$(date)\\", \\"web_status\\": \\"\${check_web_service.status_code:-failed}\\", \\"api_status\\": \\"\${check_api_service.status_code:-failed}\\", \\"threshold\\": \\"\${var.alert_threshold}\\"}"
+    }
+  }
+
+  step "archive_results" {
+    plugin = "shell"
+    action = "exec"
+    depends_on = ["create_dashboard_data"]
+    params = {
+      command = "mkdir -p /tmp/monitoring_archive && cp /tmp/monitoring_report.json /tmp/monitoring_archive/report-$(date +%Y%m%d-%H%M%S).json"
+    }
+  }
+}
+EOF`,
+                delay: 1000
+            },
+            {
+                type: 'checkpoint',
+                text: '<div class="checkpoint"><strong>Pro Tips for Practice:</strong><br/>• Start simple and add complexity gradually<br/>• Use <code>corynth plan</code> to visualize dependencies<br/>• Test error scenarios with continue_on settings<br/>• Leverage parallel execution for performance<br/>• Document your workflows with good descriptions</div>',
+                delay: 700
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><strong>Your Turn!</strong><br/>Now try running these example workflows:<br/>1. <code>corynth apply challenge1-solution.hcl</code><br/>2. <code>corynth apply challenge2-solution.hcl</code><br/>3. <code>corynth apply challenge3-solution.hcl</code><br/><br/>Then modify them to match your own use cases!</div>',
+                delay: 800
+            },
+            {
+                type: 'conclusion',
+                text: '<div class="checkpoint"><strong>Advanced Training Complete!</strong><br/><br/><strong>You have Mastered:</strong><br/>• Remote plugin auto-installation and caching<br/>• Parallel execution for performance optimization<br/>• Production-ready error handling and retries<br/>• Real-world workflow orchestration patterns<br/>• Complex dependency management<br/>• Multi-plugin integration workflows<br/><br/><strong>You are now ready to build production-grade automation workflows with Corynth!</strong><br/><br/><strong>Continue learning:</strong><br/>• Explore the community gallery for more examples<br/>• Try building your own custom plugins<br/>• Share your workflows with the community</div>',
+                delay: 1000
+            }
+        ];
+
+        let currentIndex = 0;
+        const contentEl = document.getElementById('content');
+
+        function createCopyButton(textToCopy) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = function(e) {
+                e.stopPropagation();
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyBtn.textContent = 'Copied';
+                    copyBtn.classList.add('clicked');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('clicked');
+                    }, 2000);
+                }).catch(() => {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    copyBtn.textContent = 'Copied';
+                    copyBtn.classList.add('clicked');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('clicked');
+                    }, 2000);
+                });
+            };
+            return copyBtn;
+        }
+
+        function typeText(text, element, callback, speed = 20) {
+            let i = 0;
+            const typeChar = () => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (i % 10 === 0) {
+                        const terminal = document.querySelector('.terminal');
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }
+                    i++;
+                    setTimeout(typeChar, speed + Math.random() * 10);
+                } else {
+                    if (callback) callback();
+                }
+            };
+            typeChar();
+        }
+
+        function addLine(content, className = '', callback) {
+            const lines = content.split('\\n');
+            let lineIndex = 0;
+            
+            function addNextLine() {
+                if (lineIndex >= lines.length) {
+                    if (callback) callback();
+                    return;
+                }
+                
+                const lineContent = lines[lineIndex];
+                const line = document.createElement('div');
+                line.className = `line fade-in ${className}`;
+                
+                if (lineContent.trim() === '') {
+                    line.innerHTML = '&nbsp;';
+                    line.style.minHeight = '12px';
+                } else {
+                    if (lineContent.includes('<')) {
+                        line.innerHTML = lineContent;
+                    } else {
+                        line.textContent = lineContent;
+                    }
+                }
+                
+                contentEl.appendChild(line);
+                
+                const terminal = document.querySelector('.terminal');
+                terminal.scrollTop = terminal.scrollHeight;
+                
+                lineIndex++;
+                setTimeout(addNextLine, 50);
+            }
+            
+            addNextLine();
+        }
+
+        function showCommand(cmd, callback) {
+            const container = document.createElement('div');
+            container.className = 'copyable-line fade-in line';
+            
+            const promptSpan = document.createElement('span');
+            promptSpan.className = 'prompt';
+            promptSpan.textContent = '$ ';
+            container.appendChild(promptSpan);
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'command';
+            container.appendChild(commandSpan);
+            
+            const copyBtn = createCopyButton(cmd);
+            container.appendChild(copyBtn);
+            
+            contentEl.appendChild(container);
+            
+            const terminal = document.querySelector('.terminal');
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            typeText(cmd, commandSpan, () => {
+                terminal.scrollTop = terminal.scrollHeight;
+                callback();
+            }, 30);
+        }
+
+        function runLesson() {
+            if (currentIndex >= lessonContent.length) return;
+            
+            const content = lessonContent[currentIndex];
+            
+            switch(content.type) {
+                case 'intro':
+                case 'conclusion':
+                    addLine(content.text, 'highlight', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'explanation':
+                case 'checkpoint':
+                case 'try-it':
+                    addLine(content.text, '', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'prompt':
+                    showCommand(content.command, () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'output':
+                    addLine(content.text, 'output', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+            }
+        }
+
+        // Interactive controls
+        let isPaused = false;
+        let lessonInterval;
+
+        function pauseLesson() {
+            isPaused = true;
+            document.getElementById('pauseOverlay').style.display = 'flex';
+        }
+
+        function resumeLesson() {
+            isPaused = false;
+            document.getElementById('pauseOverlay').style.display = 'none';
+        }
+
+        function restartLesson() {
+            location.reload();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    if (isPaused) {
+                        resumeLesson();
+                    } else {
+                        pauseLesson();
+                    }
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    restartLesson();
+                    break;
+                case 'm':
+                case 'M':
+                    e.preventDefault();
+                    window.location.href = 'training-index.html';
+                    break;
+                case 'q':
+                case 'Q':
+                    e.preventDefault();
+                    document.querySelector('.terminal').scrollBy(0, -50);
+                    break;
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    document.querySelector('.terminal').scrollBy(0, 50);
+                    break;
+            }
+        });
+
+        setTimeout(runLesson, 1000);
+    </script>
+</body>
+</html>

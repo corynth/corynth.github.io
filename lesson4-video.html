@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corynth Training - Lesson 4: Remote Plugins</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 15px;
+            background: #1e1e1e;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            color: #e6e6e6;
+            zoom: 1.045;
+        }
+        
+        .terminal {
+            background: #0c0c0c;
+            border: 2px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 85vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .terminal-header {
+            background: #2d2d2d;
+            margin: -15px -15px 15px -15px;
+            padding: 8px 15px;
+            border-radius: 4px 4px 0 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            float: left;
+        }
+        
+        .control {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .control.close { background: #ff5f56; }
+        .control.minimize { background: #ffbd2e; }
+        .control.maximize { background: #27c93f; }
+        
+        .terminal-title {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            line-height: 10px;
+        }
+        
+        .prompt { color: #00d4aa; font-weight: bold; }
+        .command { color: #ffffff; }
+        .shell-user { color: #7ec8e3; font-weight: bold; }
+        .shell-host { color: #ffcc66; font-weight: bold; }
+        .shell-path { color: #a8cc8c; font-weight: bold; }
+        .output { color: #b8b8b8; margin: 6px 0; line-height: 1.3; }
+        .success { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+        .highlight { color: #ff6b9d; }
+        .comment { color: #6a9955; font-style: italic; }
+        .keyword { color: #569cd6; font-weight: bold; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .property { color: #9cdcfe; }
+        .operator { color: #d4d4d4; }
+        .bracket { color: #ffd700; font-weight: bold; }
+        .explanation { 
+            background: #1a3d5c; 
+            padding: 8px 8px 8px 52px; 
+            margin: 10px 0; 
+            border-left: 3px solid #00aaff; 
+            border-radius: 3px; 
+            font-size: 14px; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            position: relative;
+        }
+        .checkpoint { 
+            background: #1a4d2e; 
+            padding: 8px 8px 8px 52px; 
+            margin: 10px 0; 
+            border-left: 3px solid #00ff88; 
+            border-radius: 3px; 
+            font-size: 14px; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            position: relative;
+        }
+        .try-it { 
+            background: #4d1a3d; 
+            padding: 8px 8px 8px 52px; 
+            margin: 10px 0; 
+            border-left: 3px solid #ff6b9d; 
+            border-radius: 3px; 
+            font-size: 14px; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            position: relative;
+        }
+        
+        .info-avatar {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .avatar-svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+        }
+        
+        .info-avatar {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .explanation .info-avatar {
+            background: linear-gradient(135deg, #00aaff, #0088cc);
+            border: 2px solid #00aaff;
+        }
+        
+        .checkpoint .info-avatar {
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border: 2px solid #00ff88;
+        }
+        
+        .try-it .info-avatar {
+            background: linear-gradient(135deg, #ff6b9d, #cc5577);
+            border: 2px solid #ff6b9d;
+        }
+        .explanation code, .checkpoint code, .try-it code { font-family: 'SF Mono', 'Monaco', 'Consolas', monospace; background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px; }
+        
+        .line { margin: 2px 0; min-height: 18px; line-height: 1.4; }
+        .line.spaced { margin: 8px 0; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        
+        .copyable-line {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 5px 0;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        }
+        
+        .copyable-content {
+            flex: 1;
+            margin-right: 15px;
+        }
+        
+        .copy-btn {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 4px;
+            color: #00d4aa;
+            padding: 4px 8px;
+            font-size: 0.7em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(0, 212, 170, 0.2);
+            border-color: #00d4aa;
+            transform: translateY(-1px);
+        }
+        
+        .copy-btn.copied {
+            background: rgba(76, 201, 176, 0.2);
+            border-color: #4ec9b0;
+            color: #4ec9b0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 170, 255, 0.15);
+            color: #00aaff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            z-index: 1000;
+            opacity: 0.8;
+        }
+        
+        .pause-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pause-overlay.show {
+            display: flex;
+        }
+        
+        .pause-dialog {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border: 2px solid #00d4aa;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 212, 170, 0.3);
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .pause-dialog h2 {
+            color: #00d4aa;
+            margin: 0 0 20px 0;
+            font-size: 24px;
+        }
+        
+        .pause-dialog p {
+            color: #b8b8b8;
+            margin: 0 0 25px 0;
+            line-height: 1.5;
+        }
+        
+        .pause-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .pause-btn {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+            border: 1px solid #00d4aa;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .pause-btn:hover {
+            background: #00d4aa;
+            color: #000;
+            transform: translateY(-2px);
+        }
+        
+        .pause-btn.primary {
+            background: #00d4aa;
+            color: #000;
+        }
+        
+        .pause-btn.primary:hover {
+            background: #00b899;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 170, 0.4);
+        }
+        
+        .main-menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 157, 0.2);
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .main-menu-btn:hover {
+            background: #ff6b9d;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control close"></div>
+                <div class="control minimize"></div>
+                <div class="control maximize"></div>
+            </div>
+            <div class="terminal-title">Lesson 4: Remote Plugins - Corynth Training</div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="content"></div>
+    </div>
+    
+    <div class="controls-hint">
+        SPACE: Pause | Q/A: Scroll | R: Restart | M: Main Menu
+    </div>
+    
+    <div class="main-menu-btn" onclick="returnToMainMenu()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+        </svg>
+        Main Menu
+    </div>
+    
+    <div class="pause-overlay">
+        <div class="pause-dialog">
+            <h2>Lesson Paused</h2>
+            <p>Take your time to review the content. When you're ready, continue to the next section or choose another option.</p>
+            <div class="pause-buttons">
+                <button class="pause-btn primary" onclick="continueLesson()">Continue</button>
+                <button class="pause-btn" onclick="restartLesson()">Restart</button>
+                <button class="pause-btn" onclick="returnToMainMenu()">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const lessonContent = [
+            {
+                type: 'intro',
+                text: '<span class="highlight">Lesson 4: Remote Plugins</span>',
+                delay: 800
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><div class="info-avatar"><svg class="avatar-svg" viewBox="0 0 24 24"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V8.5C15 9.1 14.6 9.5 14 9.5S13 9.1 13 8.5V7.5L9 7.5V8.5C9 9.1 8.6 9.5 8 9.5S7 9.1 7 8.5V7.5L3 7V9C3 10 4 11 5 11V16.5C5 18.43 6.57 20 8.5 20S12 18.43 12 16.5V15H16V16.5C16 18.43 17.57 20 19.5 20S23 18.43 23 16.5V11C23 10 22 9 21 9Z"/></svg></div><strong>What You\'ll Learn:</strong><br/>• Auto-install plugins from plugin repositories<br/>• Using HTTP and File plugins for external integrations<br/>• Plugin caching for improved performance<br/>• Extending Corynth capabilities infinitely</div>',
+                delay: 600
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong>Why Remote Plugins Matter:</strong><br/>Remote plugins extend Corynth infinitely without manual installation. They\'re automatically cached and managed, making your workflows instantly more powerful.</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'cat > remote-plugins.hcl << EOF',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: `workflow "remote-plugins-demo" {
+  description = "Using remote plugins"
+  version     = "1.0.0"
+
+  step "fetch_data" {
+    plugin = "http"
+    action = "get"
+    
+    params = {
+      url     = "https://api.github.com/users/octocat"
+      timeout = 30
+    }
+  }
+
+  step "save_data" {
+    plugin    = "file"
+    action    = "write"
+    depends_on = ["fetch_data"]
+    
+    params = {
+      path    = "/tmp/github-user.json"
+      content = "GitHub API data saved"
+    }
+  }
+}
+EOF`,
+                delay: 800
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong>Understanding Remote Plugins:</strong><br/>• <code>plugin = "http"</code> - Automatically downloaded when first used<br/>• <code>plugin = "file"</code> - Built-in file operations plugin<br/>• <code>depends_on</code> - Ensures proper execution order<br/>• Remote plugins are cached locally for performance</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'cat remote-plugins.hcl',
+                delay: 500
+            },
+            {
+                type: 'output',
+                text: '<span class="info">workflow</span> <span class="highlight">"remote-plugins-demo"</span> <span class="info">{</span>\n  <span class="success">description</span> = <span class="highlight">"Using remote plugins"</span>\n  <span class="success">version</span>     = <span class="highlight">"1.0.0"</span>\n\n  <span class="info">step</span> <span class="highlight">"fetch_data"</span> <span class="info">{</span>\n    <span class="success">plugin</span> = <span class="highlight">"http"</span>    <span class="comment"># Remote plugin</span>\n    <span class="success">action</span> = <span class="highlight">"get"</span>\n    \n    <span class="success">params</span> = <span class="info">{</span>\n      <span class="success">url</span>     = <span class="highlight">"https://api.github.com/users/octocat"</span>\n      <span class="success">timeout</span> = <span class="highlight">30</span>\n    <span class="info">}</span>\n  <span class="info">}</span>\n\n  <span class="info">step</span> <span class="highlight">"save_data"</span> <span class="info">{</span>\n    <span class="success">plugin</span>    = <span class="highlight">"file"</span>    <span class="comment"># Remote plugin</span>\n    <span class="success">action</span>    = <span class="highlight">"write"</span>\n    <span class="success">depends_on</span> = [<span class="highlight">"fetch_data"</span>]\n    \n    <span class="success">params</span> = <span class="info">{</span>\n      <span class="success">path</span>    = <span class="highlight">"/tmp/github-user.json"</span>\n      <span class="success">content</span> = <span class="highlight">"GitHub API data saved"</span>\n    <span class="info">}</span>\n  <span class="info">}</span>\n<span class="info">}</span>',
+                delay: 800
+            },
+            {
+                type: 'prompt',
+                command: 'corynth apply remote-plugins.hcl',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: '<span class="info">• Loading workflow from remote-plugins.hcl...</span>\n\nWorkflow: remote-plugins-demo\nDescription: Using remote plugins\nSteps to execute: 2\nEstimated duration: 1m0s\n\nSteps:\n  •  1. fetch_data (<span class="success">http</span>.<span class="success">get</span>)\n  •  2. save_data (<span class="success">file</span>.<span class="success">write</span>)\n\nStarting workflow execution...\n\n<span class="success">  Workflow completed: remote-plugins-demo</span>\nDuration: 2s\nSteps: 2/2\n\n<span class="info"> Remote plugins were automatically installed and cached</span>',
+                delay: 1000
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><div class="info-avatar"><svg class="avatar-svg" viewBox="0 0 24 24"><path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L8,10.58L13.41,16L20,9.41L18.58,8L16,6M12.5,2C17.19,2 21.27,5.61 21.72,10.23L20.23,10.5C19.85,6.83 16.95,4 13.5,4C9.36,4 6,7.36 6,11.5S9.36,19 13.5,19C15.54,19 17.39,18.05 18.59,16.5L19.93,17.77C18.32,19.74 15.87,21 13.5,21C8.25,21 4,16.75 4,11.5S8.25,2 12.5,2Z"/></svg></div><strong>Try It Yourself:</strong><br/>1. Modify the URL to fetch different GitHub users<br/>2. Add a third step that processes the saved data<br/>3. Try other HTTP actions like POST or PUT<br/><br/><strong>Hint:</strong> Use the <code>calculator</code> plugin to process numeric data from APIs!</div>',
+                delay: 800
+            },
+            {
+                type: 'checkpoint',
+                text: '<div class="checkpoint"><div class="info-avatar"><svg class="avatar-svg" viewBox="0 0 24 24"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg></div><strong>Checkpoint:</strong> You have mastered remote plugins!<br/>• HTTP plugin for API integrations<br/>• File plugin for data storage<br/>• Automatic plugin installation<br/>• Understanding plugin dependencies</div>',
+                delay: 600
+            },
+            {
+                type: 'conclusion',
+                text: '<div class="checkpoint"><strong>Lesson 4 Complete!</strong><br/><br/><strong>What You have Mastered:</strong><br/>• Remote plugin auto-installation and usage<br/>• HTTP plugin for external API calls<br/>• File plugin for data persistence<br/>• Plugin dependency management<br/>• Building workflows with external integrations<br/><br/><strong>Next:</strong> Lesson 5 covers parallel execution for faster workflows!</div>',
+                delay: 1000
+            }
+        ];
+
+        let currentIndex = 0;
+        const contentEl = document.getElementById('content');
+
+        function showCommand(cmd, callback) {
+            const container = document.createElement('div');
+            container.className = 'copyable-line fade-in line';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'copyable-content';
+            
+            // Create realistic shell prompt: user@host:~/path$ 
+            const userSpan = document.createElement('span');
+            userSpan.className = 'shell-user';
+            userSpan.textContent = 'devops';
+            
+            const atSpan = document.createElement('span');
+            atSpan.style.color = '#d4d4d4';
+            atSpan.textContent = '@';
+            
+            const hostSpan = document.createElement('span');
+            hostSpan.className = 'shell-host';
+            hostSpan.textContent = 'corynth-demo';
+            
+            const colonSpan = document.createElement('span');
+            colonSpan.style.color = '#d4d4d4';
+            colonSpan.textContent = ':';
+            
+            const pathSpan = document.createElement('span');
+            pathSpan.className = 'shell-path';
+            pathSpan.textContent = '~/corynth-tutorial';
+            
+            const promptSpan = document.createElement('span');
+            promptSpan.className = 'prompt';
+            promptSpan.textContent = '$ ';
+            
+            contentDiv.appendChild(userSpan);
+            contentDiv.appendChild(atSpan);
+            contentDiv.appendChild(hostSpan);
+            contentDiv.appendChild(colonSpan);
+            contentDiv.appendChild(pathSpan);
+            contentDiv.appendChild(promptSpan);
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'command';
+            contentDiv.appendChild(commandSpan);
+            
+            // Add copy button
+            const copyBtn = createCopyButton(cmd);
+            
+            container.appendChild(contentDiv);
+            container.appendChild(copyBtn);
+            contentEl.appendChild(container);
+            
+            const terminal = document.querySelector('.terminal');
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            typeText(cmd, commandSpan, () => {
+                terminal.scrollTop = terminal.scrollHeight;
+                callback();
+            }, 30);
+        }
+
+        function typeText(text, element, callback, speed = 20) {
+            let i = 0;
+            const typeChar = () => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (i % 10 === 0) {
+                        const terminal = document.querySelector('.terminal');
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }
+                    i++;
+                    setTimeout(typeChar, speed + Math.random() * 10);
+                } else {
+                    if (callback) callback();
+                }
+            };
+            typeChar();
+        }
+
+        function addLine(content, className = '', callback) {
+            const lines = content.split(/\\n|\n/);
+            let lineIndex = 0;
+            
+            function addNextLine() {
+                if (lineIndex >= lines.length) {
+                    if (callback) callback();
+                    return;
+                }
+                
+                const lineContent = lines[lineIndex];
+                const line = document.createElement('div');
+                line.className = `line fade-in ${className}`;
+                
+                if (lineContent.trim() === '') {
+                    line.innerHTML = '&nbsp;';
+                    line.style.minHeight = '20px';
+                } else {
+                    if (lineContent.includes('<')) {
+                        line.innerHTML = lineContent;
+                    } else {
+                        line.textContent = lineContent;
+                    }
+                }
+                
+                contentEl.appendChild(line);
+                
+                const terminal = document.querySelector('.terminal');
+                terminal.scrollTop = terminal.scrollHeight;
+                
+                lineIndex++;
+                setTimeout(addNextLine, 80);
+            }
+            
+            addNextLine();
+        }
+
+        function showCommand(cmd, callback) {
+            const container = document.createElement('div');
+            container.className = 'copyable-line fade-in line';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'copyable-content';
+            
+            // Create realistic shell prompt: user@host:~/path$ 
+            const userSpan = document.createElement('span');
+            userSpan.className = 'shell-user';
+            userSpan.textContent = 'devops';
+            
+            const atSpan = document.createElement('span');
+            atSpan.style.color = '#d4d4d4';
+            atSpan.textContent = '@';
+            
+            const hostSpan = document.createElement('span');
+            hostSpan.className = 'shell-host';
+            hostSpan.textContent = 'corynth-demo';
+            
+            const colonSpan = document.createElement('span');
+            colonSpan.style.color = '#d4d4d4';
+            colonSpan.textContent = ':';
+            
+            const pathSpan = document.createElement('span');
+            pathSpan.className = 'shell-path';
+            pathSpan.textContent = '~/corynth-tutorial';
+            
+            const promptSpan = document.createElement('span');
+            promptSpan.className = 'prompt';
+            promptSpan.textContent = '$ ';
+            
+            contentDiv.appendChild(userSpan);
+            contentDiv.appendChild(atSpan);
+            contentDiv.appendChild(hostSpan);
+            contentDiv.appendChild(colonSpan);
+            contentDiv.appendChild(pathSpan);
+            contentDiv.appendChild(promptSpan);
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'command';
+            contentDiv.appendChild(commandSpan);
+            
+            // Add copy button
+            const copyBtn = createCopyButton(cmd);
+            
+            container.appendChild(contentDiv);
+            container.appendChild(copyBtn);
+            contentEl.appendChild(container);
+            
+            const terminal = document.querySelector('.terminal');
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            typeText(cmd, commandSpan, () => {
+                terminal.scrollTop = terminal.scrollHeight;
+                callback();
+            }, 30);
+        }
+
+        // Smart pause logic: analyze lesson content to determine optimal pause points
+        function addSmartPauseLogic() {
+            const infoBlockTypes = ['explanation', 'checkpoint', 'try-it'];
+            
+            for (let i = 0; i < lessonContent.length; i++) {
+                const current = lessonContent[i];
+                
+                // Always pause by default
+                current.shouldPause = true;
+                
+                // Check if this is an info block
+                if (infoBlockTypes.includes(current.type)) {
+                    // Check if the next item is also an info block
+                    let nextInfoBlockIndex = i + 1;
+                    
+                    // Skip any non-info blocks to find the next info block
+                    while (nextInfoBlockIndex < lessonContent.length && 
+                           !infoBlockTypes.includes(lessonContent[nextInfoBlockIndex].type)) {
+                        nextInfoBlockIndex++;
+                    }
+                    
+                    // If we found another info block right after (or very close), don't pause here
+                    if (nextInfoBlockIndex < lessonContent.length && 
+                        nextInfoBlockIndex - i <= 3) { // Allow up to 2 non-info items between
+                        current.shouldPause = false;
+                    }
+                }
+            }
+        }
+
+        function runLesson() {
+            if (currentIndex >= lessonContent.length) return;
+            
+            const content = lessonContent[currentIndex];
+            
+            switch(content.type) {
+                case 'intro':
+                case 'conclusion':
+                    addLine(content.text, 'highlight', () => {
+                        currentIndex++;
+                        if (content.shouldPause !== false) {
+                            pauseForInput(() => {
+                                setTimeout(runLesson, autoPlay ? content.delay : 100);
+                            });
+                        } else {
+                            setTimeout(runLesson, autoPlay ? content.delay : 100);
+                        }
+                    });
+                    break;
+                    
+                case 'explanation':
+                case 'checkpoint':
+                case 'try-it':
+                    addLine(content.text, '', () => {
+                        currentIndex++;
+                        if (content.shouldPause !== false) {
+                            pauseForInput(() => {
+                                setTimeout(runLesson, autoPlay ? content.delay : 100);
+                            });
+                        } else {
+                            setTimeout(runLesson, autoPlay ? content.delay : 100);
+                        }
+                    });
+                    break;
+                    
+                case 'prompt':
+                    showCommand(content.command, () => {
+                        currentIndex++;
+                        if (content.shouldPause !== false) {
+                            pauseForInput(() => {
+                                setTimeout(runLesson, autoPlay ? content.delay : 100);
+                            });
+                        } else {
+                            setTimeout(runLesson, autoPlay ? content.delay : 100);
+                        }
+                    });
+                    break;
+                    
+                case 'output':
+                    addLine(content.text, 'output', () => {
+                        currentIndex++;
+                        if (content.shouldPause !== false) {
+                            pauseForInput(() => {
+                                setTimeout(runLesson, autoPlay ? content.delay : 100);
+                            });
+                        } else {
+                            setTimeout(runLesson, autoPlay ? content.delay : 100);
+                        }
+                    });
+                    break;
+            }
+        }
+
+        // Interactive controls and functions
+        function pauseForInput(callback) {
+            if (!autoPlay) {
+                isPaused = true;
+                pauseCallback = callback;
+                document.querySelector('.pause-overlay').classList.add('show');
+            } else {
+                callback();
+            }
+        }
+        
+        function continueLesson() {
+            if (isPaused && pauseCallback) {
+                isPaused = false;
+                document.querySelector('.pause-overlay').classList.remove('show');
+                const callback = pauseCallback;
+                pauseCallback = null;
+                callback();
+            }
+        }
+        
+        function restartLesson() {
+            currentIndex = 0;
+            isPaused = false;
+            autoPlay = true;
+            contentEl.innerHTML = '';
+            document.querySelector('.pause-overlay').classList.remove('show');
+            updateControlsHint();
+            setTimeout(runLesson, 1000);
+        }
+        
+        function returnToMainMenu() {
+            window.location.href = 'training-index.html';
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isPaused) {
+                    continueLesson();
+                } else {
+                    autoPlay = !autoPlay;
+                    updateControlsHint();
+                }
+            } else if (e.key === 'q' || e.key === 'Q') {
+                const terminal = document.querySelector('.terminal');
+                terminal.scrollTop = Math.max(0, terminal.scrollTop - 200);
+            } else if (e.key === 'a' || e.key === 'A') {
+                const terminal = document.querySelector('.terminal');
+                terminal.scrollTop = terminal.scrollTop + 200;
+            } else if (e.key === 'r' || e.key === 'R') {
+                restartLesson();
+            } else if (e.key === 'm' || e.key === 'M') {
+                returnToMainMenu();
+            }
+        });
+        
+        function updateControlsHint() {
+            const hint = document.querySelector('.controls-hint');
+            if (autoPlay) {
+                hint.innerHTML = 'SPACE: Pause | Q/A: Scroll | R: Restart | M: Main Menu';
+            } else {
+                hint.innerHTML = 'SPACE: Continue | Q/A: Scroll | R: Restart | M: Main Menu';
+            }
+        }
+        
+        // Make functions globally accessible for onclick handlers
+        // Copy functionality
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const originalText = button.textContent;
+                button.textContent = 'Copied';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        function createCopyButton(text, className = 'copy-btn') {
+            const button = document.createElement('button');
+            button.className = className;
+            button.textContent = 'Copy';
+            button.onclick = () => copyToClipboard(text, button);
+            return button;
+        }
+
+        window.continueLesson = continueLesson;
+        window.restartLesson = restartLesson;
+        window.returnToMainMenu = returnToMainMenu;
+        window.copyToClipboard = copyToClipboard;
+        window.createCopyButton = createCopyButton;
+        
+        // Add smart pause logic and variables
+        let isPaused = false;
+        let autoPlay = true;
+        let pauseCallback = null;
+        
+        updateControlsHint();
+        addSmartPauseLogic();
+        setTimeout(runLesson, 1000);
+    </script>
+</body>
+</html>

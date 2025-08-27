@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corynth Training - Lesson 7: Real-World Project</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 15px;
+            background: #1e1e1e;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            color: #e6e6e6;
+            zoom: 1.045;
+        }
+        
+        .terminal {
+            background: #0c0c0c;
+            border: 2px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 85vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .terminal-header {
+            background: #2d2d2d;
+            margin: -15px -15px 15px -15px;
+            padding: 8px 15px;
+            border-radius: 4px 4px 0 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            float: left;
+        }
+        
+        .control {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .control.close { background: #ff5f56; }
+        .control.minimize { background: #ffbd2e; }
+        .control.maximize { background: #27c93f; }
+        
+        .terminal-title {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            line-height: 10px;
+        }
+        
+        .prompt { color: #00d4aa; font-weight: bold; }
+        .command { color: #ffffff; }
+        .shell-user { color: #7ec8e3; font-weight: bold; }
+        .shell-host { color: #ffcc66; font-weight: bold; }
+        .shell-path { color: #a8cc8c; font-weight: bold; }
+        .output { color: #b8b8b8; margin: 6px 0; line-height: 1.3; }
+        .success { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+        .highlight { color: #ff6b9d; }
+        .comment { color: #6a9955; font-style: italic; }
+        .explanation { background: #1a3d5c; padding: 12px; margin: 15px 0; border-left: 4px solid #00aaff; border-radius: 4px; }
+        .checkpoint { background: #1a4d2e; padding: 12px; margin: 15px 0; border-left: 4px solid #00ff88; border-radius: 4px; }
+        .try-it { background: #4d1a3d; padding: 12px; margin: 15px 0; border-left: 4px solid #ff6b9d; border-radius: 4px; }
+        
+        .line { margin: 2px 0; min-height: 22px; line-height: 1.5; }
+        .line.spaced { margin: 8px 0; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        
+        .copyable-line {
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            color: #00d4aa;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7em;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            opacity: 1;
+            background: rgba(0, 212, 170, 0.2);
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .copy-btn.clicked {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+        }
+        
+        /* Navigation overlays */
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 170, 255, 0.15);
+            color: #00aaff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            font-size: 11px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .controls-hint:hover {
+            opacity: 1;
+        }
+
+        .main-menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 107, 157, 0.2);
+            color: #ff6b9d;
+            border: 1px solid #ff6b9d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 1500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .main-menu-btn:hover {
+            background: #ff6b9d;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .pause-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .pause-dialog {
+            background: rgba(26, 26, 46, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .pause-dialog h3 {
+            color: #00aaff;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .pause-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pause-btn {
+            background: rgba(0, 170, 255, 0.2);
+            color: #00aaff;
+            border: 1px solid rgba(0, 170, 255, 0.4);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .pause-btn:hover {
+            background: rgba(0, 170, 255, 0.3);
+            border-color: rgba(0, 170, 255, 0.6);
+        }
+        
+        .info-avatar {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .avatar-svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control close"></div>
+                <div class="control minimize"></div>
+                <div class="control maximize"></div>
+            </div>
+            <div class="terminal-title">Lesson 7: Real-World Project - Corynth Training</div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="content"></div>
+    </div>
+
+    <!-- Navigation overlays -->
+    <div class="controls-hint">
+        SPACE: Pause | Q/A: Scroll | R: Restart | M: Main Menu
+    </div>
+
+    <a href="training-index.html" class="main-menu-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/>
+        </svg>
+        Main Menu
+    </a>
+
+    <div class="pause-overlay" id="pauseOverlay">
+        <div class="pause-dialog">
+            <h3>Lesson Paused</h3>
+            <p>Choose an option to continue:</p>
+            <div class="pause-buttons">
+                <button class="pause-btn" onclick="resumeLesson()">Continue</button>
+                <button class="pause-btn" onclick="restartLesson()">Restart</button>
+                <button class="pause-btn" onclick="window.location.href='training-index.html'">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const lessonContent = [
+            {
+                type: 'intro',
+                text: '<span class="highlight">Lesson 7: Real-World Project</span>',
+                delay: 800
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><div class="info-avatar"><svg class="avatar-svg" viewBox="0 0 24 24"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V8.5C15 9.1 14.6 9.5 14 9.5S13 9.1 13 8.5V7.5L9 7.5V8.5C9 9.1 8.6 9.5 8 9.5S7 9.1 7 8.5V7.5L3 7V9C3 10 4 11 5 11V16.5C5 18.43 6.57 20 8.5 20S12 18.43 12 16.5V15H16V16.5C16 18.43 17.57 20 19.5 20S23 18.43 23 16.5V11C23 10 22 9 21 9Z"/></svg></div><strong>Complete Production Workflow:</strong><br/>• Combines all concepts learned<br/>• Realistic backup and monitoring scenario<br/>• Multi-plugin orchestration<br/>• Production-ready error handling</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'cat > production-backup.hcl << EOF',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: `workflow "production-backup" {
+  description = "Complete backup workflow with monitoring"
+  
+  variable "backup_dir" {
+    type    = string
+    default = "/tmp/backup-\\$(date +%Y%m%d)"
+  }
+  
+  step "health_check" {
+    plugin = "http"
+    action = "get"
+    params = {
+      url = "https://httpbin.org/status/200"
+    }
+    retry {
+      max_attempts = 3
+    }
+  }
+  
+  step "prepare_backup" {
+    plugin = "shell"
+    action = "exec"
+    params = {
+      command = "mkdir -p \\\${var.backup_dir}"
+    }
+  }
+  
+  # These run in parallel
+  step "backup_configs" {
+    plugin     = "shell"
+    action     = "exec"
+    depends_on = ["prepare_backup"]
+    params = {
+      command = "cp -r ~/.corynth \\\${var.backup_dir}/configs"
+    }
+  }
+  
+  step "backup_logs" {
+    plugin     = "shell"
+    action     = "exec"
+    depends_on = ["prepare_backup"]
+    params = {
+      command = "cp /var/log/corynth.log \\\${var.backup_dir}/ 2>/dev/null || echo 'No logs'"
+    }
+  }
+  
+  step "create_manifest" {
+    plugin     = "file"
+    action     = "write"
+    depends_on = ["backup_configs", "backup_logs", "health_check"]
+    params = {
+      path    = "\\\${var.backup_dir}/manifest.json"
+      content = "{\\\"timestamp\\\": \\\"\\$(date)\\\", \\\"status\\\": \\\"\\\${health_check.status_code}\\\"}"
+    }
+  }
+  
+  step "verify_backup" {
+    plugin     = "shell"
+    action     = "exec"
+    depends_on = ["create_manifest"]
+    params = {
+      command = "ls -la \\\${var.backup_dir} && du -sh \\\${var.backup_dir}"
+    }
+  }
+}
+EOF`,
+                delay: 1000
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong>Understanding the Production Workflow:</strong><br/>• <code>variable</code> blocks for configuration<br/>• Health checks before critical operations<br/>• Parallel backup operations for efficiency<br/>• File operations with proper error handling<br/>• Comprehensive verification steps</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'cat production-backup.hcl',
+                delay: 500
+            },
+            {
+                type: 'output',
+                text: `<span class="info">workflow</span> <span class="highlight">"production-backup"</span> <span class="info">{</span>
+  <span class="success">description</span> = <span class="highlight">"Complete backup workflow with monitoring"</span>
+  
+  <span class="info">variable</span> <span class="highlight">"backup_dir"</span> <span class="info">{</span>
+    <span class="success">type</span>    = <span class="highlight">string</span>
+    <span class="success">default</span> = <span class="highlight">"/tmp/backup-\\$(date +%Y%m%d)"</span>
+  <span class="info">}</span>
+  
+  <span class="info">step</span> <span class="highlight">"health_check"</span> <span class="info">{</span>
+    <span class="success">plugin</span> = <span class="highlight">"http"</span>
+    <span class="success">action</span> = <span class="highlight">"get"</span>
+    <span class="success">params</span> = <span class="info">{</span>
+      <span class="success">url</span> = <span class="highlight">"https://httpbin.org/status/200"</span>
+    <span class="info">}</span>
+    <span class="success">retry</span> <span class="info">{</span>
+      <span class="success">max_attempts</span> = <span class="highlight">3</span>
+    <span class="info">}</span>
+  <span class="info">}</span>
+  
+  <span class="info">step</span> <span class="highlight">"prepare_backup"</span> <span class="info">{</span>
+    <span class="success">plugin</span> = <span class="highlight">"shell"</span>
+    <span class="success">action</span> = <span class="highlight">"exec"</span>
+    <span class="success">params</span> = <span class="info">{</span>
+      <span class="success">command</span> = <span class="highlight">"mkdir -p \\\${var.backup_dir}"</span>
+    <span class="info">}</span>
+  <span class="info">}</span>
+  
+  <span class="comment"># These run in parallel</span>
+  <span class="info">step</span> <span class="highlight">"backup_configs"</span> <span class="info">{</span>
+    <span class="success">plugin</span>     = <span class="highlight">"shell"</span>
+    <span class="success">action</span>     = <span class="highlight">"exec"</span>
+    <span class="success">depends_on</span> = [<span class="highlight">"prepare_backup"</span>]
+    <span class="success">params</span> = <span class="info">{</span>
+      <span class="success">command</span> = <span class="highlight">"cp -r ~/.corynth \\\${var.backup_dir}/configs"</span>
+    <span class="info">}</span>
+  <span class="info">}</span>
+  
+  <span class="info">step</span> <span class="highlight">"backup_logs"</span> <span class="info">{</span>
+    <span class="success">plugin</span>     = <span class="highlight">"shell"</span>
+    <span class="success">action</span>     = <span class="highlight">"exec"</span>
+    <span class="success">depends_on</span> = [<span class="highlight">"prepare_backup"</span>]
+    <span class="success">params</span> = <span class="info">{</span>
+      <span class="success">command</span> = <span class="highlight">"cp /var/log/corynth.log \\\${var.backup_dir}/ 2>/dev/null || echo 'No logs'"</span>
+    <span class="info">}</span>
+  <span class="info">}</span>
+  
+  <span class="info">step</span> <span class="highlight">"create_manifest"</span> <span class="info">{</span>
+    <span class="success">plugin</span>     = <span class="highlight">"file"</span>
+    <span class="success">action</span>     = <span class="highlight">"write"</span>
+    <span class="success">depends_on</span> = [<span class="highlight">"backup_configs"</span>, <span class="highlight">"backup_logs"</span>, <span class="highlight">"health_check"</span>]
+    <span class="success">params</span> = <span class="info">{</span>
+      <span class="success">path</span>    = <span class="highlight">"\\\${var.backup_dir}/manifest.json"</span>
+      <span class="success">content</span> = <span class="highlight">"{\"timestamp\": \"\\$(date)\", \"status\": \"\\\${health_check.status_code}\"}"
+    <span class="info">}</span>
+  <span class="info">}</span>
+  
+  <span class="info">step</span> <span class="highlight">"verify_backup"</span> <span class="info">{</span>
+    <span class="success">plugin</span>     = <span class="highlight">"shell"</span>
+    <span class="success">action</span>     = <span class="highlight">"exec"</span>
+    <span class="success">depends_on</span> = [<span class="highlight">"create_manifest"</span>]
+    <span class="success">params</span> = <span class="info">{</span>
+      <span class="success">command</span> = <span class="highlight">"ls -la \\\${var.backup_dir} && du -sh \\\${var.backup_dir}"</span>
+    <span class="info">}</span>
+  <span class="info">}</span>
+<span class="info">}</span>
+<span class="info">EOF</span>`,
+                delay: 800
+            },
+            {
+                type: 'prompt',
+                command: 'corynth apply production-backup.hcl',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: `<span class="info">Starting workflow execution...</span>
+
+<span class="success">[1/6] DONE health_check</span> <span class="info">(http.get)</span>
+Status: 200 OK
+
+<span class="success">[2/6] DONE prepare_backup</span> <span class="info">(shell.exec)</span>
+Created directory: /tmp/backup-20240825
+
+<span class="success">PARALLEL Parallel backup started (2 concurrent tasks)</span>
+<span class="success">[3/6] DONE backup_configs</span> <span class="info">(completed in 0.1s)</span>
+<span class="success">[4/6] DONE backup_logs</span> <span class="info">(completed in 0.1s)</span>
+
+<span class="success">[5/6] DONE create_manifest</span> <span class="info">(file.write)</span>
+Manifest created with health status: 200
+
+<span class="success">[6/6] DONE verify_backup</span> <span class="info">(shell.exec)</span>
+total 16
+drwxr-xr-x configs/
+-rw-r--r-- manifest.json
+4.0K    /tmp/backup-20240825
+
+<span class="success">DONE DONE Workflow completed: production-backup</span>
+<span class="info">Duration: 2.8s</span>
+<span class="info">Steps: 6/6 successful</span>`,
+                delay: 1000
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><div class="info-avatar"><svg class="avatar-svg" viewBox="0 0 24 24"><path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L8,10.58L13.41,16L20,9.41L18.58,8L16,6M12.5,2C17.19,2 21.27,5.61 21.72,10.23L20.23,10.5C19.85,6.83 16.95,4 13.5,4C9.36,4 6,7.36 6,11.5S9.36,19 13.5,19C15.54,19 17.39,18.05 18.59,16.5L19.93,17.77C18.32,19.74 15.87,21 13.5,21C8.25,21 4,16.75 4,11.5S8.25,2 12.5,2Z"/></svg></div><strong>Advanced Challenge:</strong><br/>1. Add database backup steps to the workflow<br/>2. Implement different backup strategies (incremental vs full)<br/>3. Add notification steps (email/slack) for success/failure<br/>4. Create a restore workflow that reverses the backup process<br/><br/><strong>Production Tip:</strong> Use environment variables for sensitive configuration!</div>',
+                delay: 800
+            },
+            {
+                type: 'checkpoint',
+                text: '<div class="checkpoint"><div class="info-avatar"><svg class="avatar-svg" viewBox="0 0 24 24"><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/></svg></div><strong>Checkpoint:</strong> You have built a production-ready workflow!<br/>• Multi-step orchestration with dependencies<br/>• Parallel execution for performance<br/>• Error handling and retry policies<br/>• Variable usage for configuration<br/>• Real-world backup automation patterns</div>',
+                delay: 600
+            },
+            {
+                type: 'conclusion',
+                text: '<div class="checkpoint"><strong>Lesson 7 Complete!</strong><br/><br/><strong>What You have Mastered:</strong><br/>• Building complex production workflows<br/>• Combining multiple plugins and patterns<br/>• Real-world backup and monitoring scenarios<br/>• Advanced dependency management<br/>• Production-ready error handling<br/>• Performance optimization techniques<br/><br/><strong>Next:</strong> Lesson 8 provides practice exercises to cement your skills!</div>',
+                delay: 1000
+            }
+        ];
+
+        let currentIndex = 0;
+        const contentEl = document.getElementById('content');
+
+        function createCopyButton(textToCopy) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.onclick = function(e) {
+                e.stopPropagation();
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    copyBtn.textContent = 'Copied';
+                    copyBtn.classList.add('clicked');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('clicked');
+                    }, 2000);
+                }).catch(() => {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    copyBtn.textContent = 'Copied';
+                    copyBtn.classList.add('clicked');
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.classList.remove('clicked');
+                    }, 2000);
+                });
+            };
+            return copyBtn;
+        }
+
+        function typeText(text, element, callback, speed = 20) {
+            let i = 0;
+            const typeChar = () => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (i % 10 === 0) {
+                        const terminal = document.querySelector('.terminal');
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }
+                    i++;
+                    setTimeout(typeChar, speed + Math.random() * 10);
+                } else {
+                    if (callback) callback();
+                }
+            };
+            typeChar();
+        }
+
+        function addLine(content, className = '', callback) {
+            const lines = content.split('\\n');
+            let lineIndex = 0;
+            
+            function addNextLine() {
+                if (lineIndex >= lines.length) {
+                    if (callback) callback();
+                    return;
+                }
+                
+                const lineContent = lines[lineIndex];
+                const line = document.createElement('div');
+                line.className = `line fade-in ${className}`;
+                
+                if (lineContent.trim() === '') {
+                    line.innerHTML = '&nbsp;';
+                    line.style.minHeight = '12px';
+                } else {
+                    if (lineContent.includes('<')) {
+                        line.innerHTML = lineContent;
+                    } else {
+                        line.textContent = lineContent;
+                    }
+                }
+                
+                contentEl.appendChild(line);
+                
+                const terminal = document.querySelector('.terminal');
+                terminal.scrollTop = terminal.scrollHeight;
+                
+                lineIndex++;
+                setTimeout(addNextLine, 50);
+            }
+            
+            addNextLine();
+        }
+
+        function showCommand(cmd, callback) {
+            const container = document.createElement('div');
+            container.className = 'copyable-line fade-in line';
+            
+            const promptSpan = document.createElement('span');
+            promptSpan.className = 'prompt';
+            promptSpan.textContent = '$ ';
+            container.appendChild(promptSpan);
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'command';
+            container.appendChild(commandSpan);
+            
+            const copyBtn = createCopyButton(cmd);
+            container.appendChild(copyBtn);
+            
+            contentEl.appendChild(container);
+            
+            const terminal = document.querySelector('.terminal');
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            typeText(cmd, commandSpan, () => {
+                terminal.scrollTop = terminal.scrollHeight;
+                callback();
+            }, 30);
+        }
+
+        function runLesson() {
+            if (currentIndex >= lessonContent.length) return;
+            
+            const content = lessonContent[currentIndex];
+            
+            switch(content.type) {
+                case 'intro':
+                case 'conclusion':
+                    addLine(content.text, 'highlight', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'explanation':
+                case 'checkpoint':
+                case 'try-it':
+                    addLine(content.text, '', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'prompt':
+                    showCommand(content.command, () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'output':
+                    addLine(content.text, 'output', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+            }
+        }
+
+        // Interactive controls
+        let isPaused = false;
+        let lessonInterval;
+
+        function pauseLesson() {
+            isPaused = true;
+            document.getElementById('pauseOverlay').style.display = 'flex';
+        }
+
+        function resumeLesson() {
+            isPaused = false;
+            document.getElementById('pauseOverlay').style.display = 'none';
+        }
+
+        function restartLesson() {
+            location.reload();
+        }
+
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    if (isPaused) {
+                        resumeLesson();
+                    } else {
+                        pauseLesson();
+                    }
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    restartLesson();
+                    break;
+                case 'm':
+                case 'M':
+                    e.preventDefault();
+                    window.location.href = 'training-index.html';
+                    break;
+                case 'q':
+                case 'Q':
+                    e.preventDefault();
+                    document.querySelector('.terminal').scrollBy(0, -50);
+                    break;
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    document.querySelector('.terminal').scrollBy(0, 50);
+                    break;
+            }
+        });
+
+        setTimeout(runLesson, 1000);
+    </script>
+</body>
+</html>

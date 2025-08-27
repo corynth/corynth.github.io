@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Corynth Training - Lesson 1: First Workflow</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1e1e1e;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            color: #e6e6e6;
+        }
+        
+        .terminal {
+            background: #0c0c0c;
+            border: 3px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 1000px;
+            margin: 0 auto;
+            height: 80vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .terminal-header {
+            background: #2d2d2d;
+            margin: -20px -20px 20px -20px;
+            padding: 12px 20px;
+            border-radius: 5px 5px 0 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .window-controls {
+            display: flex;
+            gap: 8px;
+            float: left;
+        }
+        
+        .control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .control.close { background: #ff5f56; }
+        .control.minimize { background: #ffbd2e; }
+        .control.maximize { background: #27c93f; }
+        
+        .terminal-title {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            line-height: 12px;
+        }
+        
+        .prompt { color: #00d4aa; font-weight: bold; }
+        .command { color: #ffffff; }
+        .output { color: #b8b8b8; margin: 8px 0; line-height: 1.4; }
+        .success { color: #00ff88; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+        .highlight { color: #ff6b9d; }
+        .explanation { background: #1a3d5c; padding: 12px; margin: 15px 0; border-left: 4px solid #00aaff; border-radius: 4px; }
+        .checkpoint { background: #1a4d2e; padding: 12px; margin: 15px 0; border-left: 4px solid #00ff88; border-radius: 4px; }
+        .try-it { background: #4d1a3d; padding: 12px; margin: 15px 0; border-left: 4px solid #ff6b9d; border-radius: 4px; }
+        
+        .line { margin: 2px 0; min-height: 22px; line-height: 1.5; }
+        .line.spaced { margin: 8px 0; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="window-controls">
+                <div class="control close"></div>
+                <div class="control minimize"></div>
+                <div class="control maximize"></div>
+            </div>
+            <div class="terminal-title">Lesson 1: First Workflow - Corynth Training</div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="content"></div>
+    </div>
+
+    <script>
+        const lessonContent = [
+            {
+                type: 'intro',
+                text: ' <span class="highlight">Lesson 1: Your First Workflow</span>',
+                delay: 800
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong> What You\'ll Learn:</strong><br/>• Basic HCL syntax for workflows<br/>• Workflow structure (metadata + steps)<br/>• Using the built-in shell plugin<br/>• Validation and execution commands</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'mkdir corynth-tutorial && cd corynth-tutorial',
+                delay: 800
+            },
+            {
+                type: 'output',
+                text: '<span class="info">📁 Created project directory</span>',
+                delay: 400
+            },
+            {
+                type: 'prompt',
+                command: 'corynth init',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: '<span class="success"> Initialized Corynth workspace</span>\n<span class="info">Created .corynth/ directory for plugins and state</span>',
+                delay: 500
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong> Creating Your First Workflow</strong><br/>Let\'s create a simple "Hello World" workflow using HCL syntax.<br/>HCL (HashiCorp Configuration Language) is human-readable and easy to learn.</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'cat > hello.hcl << EOF',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: 'workflow "hello" {\n  description = "My first workflow"\n  version     = "1.0.0"\n\n  step "greet" {\n    plugin = "shell"\n    action = "exec"\n    \n    params = {\n      command = "echo \'Hello, Corynth!\'"\n    }\n  }\n}\nEOF',
+                delay: 800
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong> Let\'s view the file we just created:</strong></div>',
+                delay: 400
+            },
+            {
+                type: 'prompt',
+                command: 'cat hello.hcl',
+                delay: 500
+            },
+            {
+                type: 'output',
+                text: '<span class="info">workflow</span> <span class="highlight">"hello"</span> <span class="info">{</span>\n  <span class="success">description</span> = <span class="highlight">"My first workflow"</span>\n  <span class="success">version</span>     = <span class="highlight">"1.0.0"</span>\n\n  <span class="info">step</span> <span class="highlight">"greet"</span> <span class="info">{</span>\n    <span class="success">plugin</span> = <span class="highlight">"shell"</span>\n    <span class="success">action</span> = <span class="highlight">"exec"</span>\n    \n    <span class="success">params</span> = <span class="info">{</span>\n      <span class="success">command</span> = <span class="highlight">"echo \'Hello, Corynth!\'"</span>\n    <span class="info">}</span>\n  <span class="info">}</span>\n<span class="info">}</span>',
+                delay: 600
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong> Understanding the Workflow Structure:</strong><br/>• <code>workflow "hello"</code> - Declares a workflow named "hello"<br/>• <code>description</code> & <code>version</code> - Metadata for documentation<br/>• <code>step "greet"</code> - Defines a step named "greet"<br/>• <code>plugin = "shell"</code> - Uses the built-in shell plugin<br/>• <code>action = "exec"</code> - Executes a shell command<br/>• <code>params</code> - Parameters passed to the plugin action</div>',
+                delay: 800
+            },
+            {
+                type: 'checkpoint',
+                text: '<div class="checkpoint"><strong> Checkpoint:</strong> You\'ve created your first HCL workflow file!<br/>The file defines a single step that uses the shell plugin to echo a message.</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'corynth validate hello.hcl',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: '<span class="info">• Validating hello.hcl...</span>\n<span class="success"> Workflow is valid</span>\nName: hello\nDescription: My first workflow\nSteps: 1',
+                delay: 500
+            },
+            {
+                type: 'explanation',
+                text: '<div class="explanation"><strong> Time to Execute!</strong><br/>The <code>validate</code> command checks your workflow syntax.<br/>Now let\'s run the workflow with <code>corynth apply</code>.</div>',
+                delay: 600
+            },
+            {
+                type: 'prompt',
+                command: 'corynth apply hello.hcl',
+                delay: 800
+            },
+            {
+                type: 'output',
+                text: '<span class="info">• Loading workflow from hello.hcl...</span>\n\nWorkflow: hello\nDescription: My first workflow\nSteps to execute: 1\nEstimated duration: 30s\n\nSteps:\n  •  1. greet (<span class="success">shell</span>.<span class="success">exec</span>)\n\nStarting workflow execution...\nHello, Corynth!\n\n<span class="success">  Workflow completed: hello</span>\nDuration: 0s\nSteps: 1/1',
+                delay: 800
+            },
+            {
+                type: 'checkpoint',
+                text: '<div class="checkpoint"><strong> Success!</strong> You\'ve executed your first Corynth workflow!<br/>• Corynth parsed the HCL file<br/>• Loaded the shell plugin<br/>• Executed the command<br/>• Saved the execution state</div>',
+                delay: 800
+            },
+            {
+                type: 'try-it',
+                text: '<div class="try-it"><strong> Try It Yourself:</strong><br/>1. Modify the echo message in hello.hcl<br/>2. Add a second step that prints the current date<br/>3. Run <code>corynth apply hello.hcl</code> again<br/><br/><strong>Hint:</strong> Use <code>command = "date"</code> for the date step!</div>',
+                delay: 800
+            },
+            {
+                type: 'prompt',
+                command: 'corynth state list',
+                delay: 600
+            },
+            {
+                type: 'output',
+                text: 'Recent executions <span class="success">(1)</span>\n  •  <span class="success">82d828ab</span>: hello (success) - <span class="success">0s</span>\n\n<span class="info"> Corynth automatically tracks all workflow executions</span>',
+                delay: 600
+            },
+            {
+                type: 'conclusion',
+                text: '<div class="checkpoint"><strong> Lesson 1 Complete!</strong><br/><br/><strong> What You\'ve Mastered:</strong><br/>• HCL workflow syntax and structure<br/>• Using the shell plugin for command execution<br/>• Validating workflows before execution<br/>• Running workflows with corynth apply<br/>• Viewing execution history<br/><br/><strong> Next:</strong> Lesson 2 covers variables and parameters for dynamic workflows!</div>',
+                delay: 1000
+            }
+        ];
+
+        let currentIndex = 0;
+        const contentEl = document.getElementById('content');
+
+        function typeText(text, element, callback, speed = 20) {
+            let i = 0;
+            const typeChar = () => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (i % 10 === 0) {
+                        const terminal = document.querySelector('.terminal');
+                        terminal.scrollTop = terminal.scrollHeight;
+                    }
+                    i++;
+                    setTimeout(typeChar, speed + Math.random() * 10);
+                } else {
+                    if (callback) callback();
+                }
+            };
+            typeChar();
+        }
+
+        function addLine(content, className = '', callback) {
+            const lines = content.split('\\n');
+            let lineIndex = 0;
+            
+            function addNextLine() {
+                if (lineIndex >= lines.length) {
+                    if (callback) callback();
+                    return;
+                }
+                
+                const lineContent = lines[lineIndex];
+                const line = document.createElement('div');
+                line.className = `line fade-in ${className}`;
+                
+                if (lineContent.trim() === '') {
+                    line.innerHTML = '&nbsp;';
+                    line.style.minHeight = '12px';
+                } else {
+                    if (lineContent.includes('<')) {
+                        line.innerHTML = lineContent;
+                    } else {
+                        line.textContent = lineContent;
+                    }
+                }
+                
+                contentEl.appendChild(line);
+                
+                const terminal = document.querySelector('.terminal');
+                terminal.scrollTop = terminal.scrollHeight;
+                
+                lineIndex++;
+                setTimeout(addNextLine, 50);
+            }
+            
+            addNextLine();
+        }
+
+        function showCommand(cmd, callback) {
+            const promptSpan = document.createElement('span');
+            promptSpan.className = 'prompt';
+            promptSpan.textContent = '$ ';
+            
+            const line = document.createElement('div');
+            line.className = 'line fade-in';
+            line.appendChild(promptSpan);
+            
+            contentEl.appendChild(line);
+            
+            const terminal = document.querySelector('.terminal');
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            const commandSpan = document.createElement('span');
+            commandSpan.className = 'command';
+            line.appendChild(commandSpan);
+            
+            typeText(cmd, commandSpan, () => {
+                terminal.scrollTop = terminal.scrollHeight;
+                callback();
+            }, 30);
+        }
+
+        function runLesson() {
+            if (currentIndex >= lessonContent.length) return;
+            
+            const content = lessonContent[currentIndex];
+            
+            switch(content.type) {
+                case 'intro':
+                case 'conclusion':
+                    addLine(content.text, 'highlight', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'explanation':
+                case 'checkpoint':
+                case 'try-it':
+                    addLine(content.text, '', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'prompt':
+                    showCommand(content.command, () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+                    
+                case 'output':
+                    addLine(content.text, 'output', () => {
+                        currentIndex++;
+                        setTimeout(runLesson, content.delay);
+                    });
+                    break;
+            }
+        }
+
+        setTimeout(runLesson, 1000);
+    </script>
+</body>
+</html>

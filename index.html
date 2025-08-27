@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Learn Corynth - Interactive Course</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            color: #e6e6e6;
+            min-height: 100vh;
+            zoom: 1.045;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 170, 255, 0.1));
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            100% { left: 100%; }
+        }
+        
+        .header-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo-svg {
+            filter: drop-shadow(0 4px 8px rgba(0,212,170,0.3));
+        }
+
+        .header h1 {
+            font-size: 1.92em;
+            margin: 0;
+            background: linear-gradient(45deg, #00d4aa, #00aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            font-size: 1em;
+            color: #b8b8b8;
+            margin: 12px 0 20px 0;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-item {
+            color: #9cdcfe;
+            font-size: 0.9em;
+        }
+        
+        .stat-item strong {
+            color: #00d4aa;
+            font-size: 1.2em;
+        }
+        
+        .stat-divider {
+            color: rgba(255,255,255,0.2);
+        }
+
+        .lessons-timeline {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto 30px auto;
+        }
+
+        .lessons-timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #00d4aa, #00aaff, #ff6b9d);
+            transform: translateX(-50%);
+            border-radius: 3px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4aa, #00aaff);
+            border: 3px solid #1e1e1e;
+            transform: translateX(-50%);
+            z-index: 2;
+            box-shadow: 0 0 20px rgba(0, 212, 170, 0.5);
+        }
+
+        .timeline-content {
+            width: 40%;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-right: 15%;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 15%;
+            text-align: left;
+        }
+
+        .lesson-card {
+            background: rgba(12, 12, 12, 0.8);
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lesson-card:hover {
+            border-color: #00d4aa;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.2);
+        }
+
+        .lesson-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4aa, #00aaff, #ff6b9d);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lesson-card:hover::before {
+            opacity: 1;
+        }
+
+        .lesson-number {
+            font-size: 1.9em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00d4aa, #00aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .lesson-title {
+            font-size: 1.35em;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .lesson-description {
+            color: #b8b8b8;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+        }
+
+        .lesson-topics {
+            margin-bottom: 20px;
+        }
+
+        .lesson-topics h4 {
+            color: #00aaff;
+            margin: 0 0 12px 0;
+            font-size: 1.2em;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .lesson-topics ul {
+            margin: 0;
+            padding-left: 24px;
+            color: #9cdcfe;
+        }
+
+        .lesson-topics li {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            font-weight: 400;
+        }
+
+        .lesson-topics li::marker {
+            color: #00d4aa;
+            font-weight: bold;
+        }
+
+
+        .lesson-status {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .lesson-status.available {
+            background: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .advanced-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(77, 26, 61, 0.2);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 8px;
+        }
+
+        .advanced-section h2 {
+            color: #ff6b9d;
+            margin: 0 0 20px 0;
+            font-size: 1.7em;
+        }
+
+        .advanced-card {
+            background: rgba(12, 12, 12, 0.6);
+            border: 2px solid #4d1a3d;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .advanced-card:hover {
+            border-color: #ff6b9d;
+            background: rgba(77, 26, 61, 0.3);
+        }
+
+        .navigation {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(26, 61, 92, 0.2);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        .navigation h3 {
+            color: #00aaff;
+            margin: 0 0 15px 0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: rgba(0, 170, 255, 0.1);
+            color: #00aaff;
+            border: 2px solid #00aaff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .button-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #00aaff;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 170, 255, 0.3);
+        }
+        
+        .nav-button:hover .button-icon {
+            transform: scale(1.1);
+        }
+        
+        .advanced-title {
+            background: linear-gradient(45deg, #ff6b9d, #ff4580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-logo">
+                <svg class="logo-svg" viewBox="0 0 24 24" width="48" height="48">
+                    <path d="M12,2L2,7L12,12L22,7L12,2M2,17L12,22L22,17L22,12L12,17L2,12L2,17Z" fill="url(#gradient1)"/>
+                    <defs>
+                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00d4aa;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00aaff;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <h1>Learn Corynth</h1>
+            <p class="header-subtitle">Master Workflow Orchestration with Interactive Lessons</p>
+            <div class="header-stats">
+                <span class="stat-item"><strong>9</strong> Comprehensive Lessons</span>
+                <span class="stat-divider">•</span>
+                <span class="stat-item"><strong>Interactive</strong> Learning</span>
+                <span class="stat-divider">•</span>
+                <span class="stat-item"><strong>Hands-On</strong> Practice</span>
+            </div>
+        </div>
+
+        <div class="lessons-timeline">
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson0-prework.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">00</div>
+                        <div class="lesson-title">Prework: Getting Started</div>
+                        <div class="lesson-description">
+                            Install Corynth, set up your environment, and verify everything works with a simple test workflow.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Install Corynth on your platform</li>
+                                <li>Initialize your first workspace</li>
+                                <li>Run a test workflow to verify setup</li>
+                                <li>Understanding the development environment</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson1-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">01</div>
+                        <div class="lesson-title">Your First Workflow</div>
+                        <div class="lesson-description">
+                            Learn the fundamentals of Corynth and create your first "Hello World" workflow using HCL syntax.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Basic HCL syntax for workflows</li>
+                                <li>Workflow structure (metadata + steps)</li>
+                                <li>Using the built-in shell plugin</li>
+                                <li>Validation and execution commands</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson2-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">02</div>
+                        <div class="lesson-title">Flexible Workflows</div>
+                        <div class="lesson-description">
+                            Make workflows configurable and reusable with environment variables and shell parameter expansion.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Environment variable substitution</li>
+                                <li>Shell parameter expansion with defaults</li>
+                                <li>Runtime workflow customization</li>
+                                <li>HCL escaping for shell variables</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson3-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">03</div>
+                        <div class="lesson-title">Multi-Step Workflows</div>
+                        <div class="lesson-description">
+                            Master workflow orchestration with dependencies, execution order, and real-world patterns.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Creating workflows with multiple steps</li>
+                                <li>Using depends_on for step dependencies</li>
+                                <li>Understanding execution order</li>
+                                <li>Parallel vs sequential processing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson4-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">04</div>
+                        <div class="lesson-title">Remote Plugins</div>
+                        <div class="lesson-description">
+                            Learn to use remote plugins that auto-install from plugin repositories for external integrations.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Auto-installing plugins from repositories</li>
+                                <li>HTTP and File plugin usage</li>
+                                <li>Plugin caching and performance</li>
+                                <li>External API integrations</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson5-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">05</div>
+                        <div class="lesson-title">Parallel Execution</div>
+                        <div class="lesson-description">
+                            Optimize workflow performance with parallel execution for independent tasks.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Understanding parallel vs sequential execution</li>
+                                <li>Using depends_on for coordination</li>
+                                <li>Performance optimization techniques</li>
+                                <li>Data processing pipeline patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson6-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">06</div>
+                        <div class="lesson-title">Error Handling & Retries</div>
+                        <div class="lesson-description">
+                            Build resilient workflows with automatic retry policies and graceful error recovery.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Configuring retry policies</li>
+                                <li>Exponential backoff strategies</li>
+                                <li>Continue-on-error patterns</li>
+                                <li>Production-ready error handling</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson7-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">07</div>
+                        <div class="lesson-title">Real-World Project</div>
+                        <div class="lesson-description">
+                            Apply all learned concepts in a complete production backup and monitoring workflow.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>Multi-plugin orchestration</li>
+                                <li>Variable usage and configuration</li>
+                                <li>Complex dependency management</li>
+                                <li>Production workflow patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="lesson-card" onclick="openLesson('lesson8-video.html')">
+                        <div class="lesson-status available"></div>
+                        <div class="lesson-number">08</div>
+                        <div class="lesson-title">Practice Exercises</div>
+                        <div class="lesson-description">
+                            Cement your skills with hands-on challenges and real-world practice scenarios.
+                        </div>
+                        <div class="lesson-topics">
+                            <h4>Learning Objectives:</h4>
+                            <ul>
+                                <li>API integration pipeline challenge</li>
+                                <li>Complete CI/CD deployment workflow</li>
+                                <li>Comprehensive monitoring solution</li>
+                                <li>Advanced workflow patterns</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="navigation">
+            <h3>Quick Actions</h3>
+            <div class="nav-buttons">
+                <a href="corynth-training.html" class="nav-button">
+                    <svg class="button-icon" viewBox="0 0 24 24" width="16" height="16">
+                        <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" fill="currentColor"/>
+                    </svg>
+                    Complete Course
+                </a>
+                <a href="realistic-terminal-demo.html" class="nav-button">
+                    <svg class="button-icon" viewBox="0 0 24 24" width="16" height="16">
+                        <path d="M8,5.14V19.14L19,12.14L8,5.14Z" fill="currentColor"/>
+                    </svg>
+                    Quick Demo
+                </a>
+                <a href="#" class="nav-button" onclick="downloadBinary()">
+                    <svg class="button-icon" viewBox="0 0 24 24" width="16" height="16">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" fill="currentColor"/>
+                    </svg>
+                    Download Binary
+                </a>
+                <a href="#" class="nav-button" onclick="viewDocumentation()">
+                    <svg class="button-icon" viewBox="0 0 24 24" width="16" height="16">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z" fill="currentColor"/>
+                    </svg>
+                    Documentation
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openLesson(filename) {
+            // Open lesson in new tab/window
+            window.open(filename, '_blank');
+        }
+
+        function downloadBinary() {
+            // Check if binary exists and download
+            const link = document.createElement('a');
+            link.href = 'corynth';
+            link.download = 'corynth';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function viewDocumentation() {
+            alert('Documentation: Visit https://docs.corynth.io for comprehensive guides and API reference.');
+        }
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add pulse animation to available lessons
+            const availableLessons = document.querySelectorAll('.lesson-status.available');
+            availableLessons.forEach(status => {
+                status.classList.add('pulse');
+            });
+
+            // Add keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '0') {
+                    openLesson('lesson0-prework.html');
+                } else if (e.key >= '1' && e.key <= '8') {
+                    const lessonNum = parseInt(e.key);
+                    const lessons = [
+                        'lesson1-video.html', 
+                        'lesson2-video.html', 
+                        'lesson3-video.html',
+                        'lesson4-video.html',
+                        'lesson5-video.html',
+                        'lesson6-video.html',
+                        'lesson7-video.html',
+                        'lesson8-video.html'
+                    ];
+                    openLesson(lessons[lessonNum - 1]);
+                } else if (e.key === '9') {
+                    openLesson('advanced-lessons-video.html');
+                }
+            });
+
+            // Show keyboard shortcuts hint
+            setTimeout(() => {
+                const hint = document.createElement('div');
+                hint.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align: middle; margin-right: 5px;"><path d="M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z" fill="#00aaff"/></svg> Tip: Press 0-8 to quickly jump to lessons';
+                hint.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(0, 170, 255, 0.2);
+                    color: #00aaff;
+                    padding: 10px 15px;
+                    border-radius: 8px;
+                    font-size: 1.05em;
+                    border: 1px solid rgba(0, 170, 255, 0.5);
+                    z-index: 1000;
+                    opacity: 0;
+                    transition: opacity 0.5s ease;
+                `;
+                document.body.appendChild(hint);
+                
+                setTimeout(() => hint.style.opacity = '1', 100);
+                setTimeout(() => {
+                    hint.style.opacity = '0';
+                    setTimeout(() => document.body.removeChild(hint), 500);
+                }, 4000);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
