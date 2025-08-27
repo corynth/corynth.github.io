@@ -225,7 +225,7 @@ EOF`,
     depends_on = ["check_web_service", "check_api_service", "collect_disk_metrics", "collect_memory_metrics"]
     params = {
       path = "/tmp/monitoring_report.json"
-      content = "{\\"timestamp\\": \\"$(date)\\", \\"web_status\\": \\"\${check_web_service.status_code:-failed}\\", \\"api_status\\": \\"\${check_api_service.status_code:-failed}\\", \\"threshold\\": \\"\${var.alert_threshold}\\"}"
+      content = "{\\"timestamp\\": \\"$(date)\\", \\"web_status\\": \\"{{.Steps.check_web_service.output.status_code}}\\", \\"api_status\\": \\"{{.Steps.check_api_service.output.status_code}}\\", \\"threshold\\": \\"{{.Variables.alert_threshold}}\\"}"
     }
   }
 
